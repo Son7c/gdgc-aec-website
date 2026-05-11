@@ -1,65 +1,92 @@
-import Image from "next/image";
+"use client";
+
+import AboutSection from "@/app/components/AboutSection";
+import { motion, useScroll, useTransform } from "framer-motion";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import TeamTrainSection from "./components/TeamTrainSection";
 
 export default function Home() {
+
+  const { scrollY } = useScroll();
+
+
+  const sunY = useTransform(scrollY, [0, 500], [0, 150]);
+  const backCloudsY = useTransform(scrollY, [0, 500], [0, -50]);
+  const birdX = useTransform(scrollY, [0, 500], [0, 200]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="relative w-full min-h-screen bg-[#FDFBF7] overflow-x-hidden">
+
+      <section
+        id="home"
+        className="relative min-h-screen flex flex-col items-center justify-start pt-40 md:pt-48 px-4 text-center"
+      >
+
+        <div className="z-20 flex flex-col items-center relative">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
+            <span className="text-[#0f9d58] block mb-2">Developer's Group OnCampus</span>
+            <span className="text-[#0f9d58] block">Asansol Engineering College</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-4 text-gray-600 max-w-lg text-sm md:text-base font-medium">
+            Learn. Build. Collaborate. Join a community of passionate developers and create impact together.
           </p>
+
+
+          <div className="flex gap-4 mt-8">
+            <Link
+              href="#join"
+              className="bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+            >
+              Join GDG <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="#events"
+              className="bg-transparent border-2 border-gray-900 text-gray-900 px-6 py-3 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors"
+            >
+              Upcoming Event
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+
+        <div className="absolute bottom-0 left-0 w-full h-[60vh] md:h-[70vh] pointer-events-none z-10 flex justify-center overflow-hidden">
+
+          <motion.div
+            style={{ y: sunY }}
+            className="absolute bottom-0 z-10 w-[300px] h-[150px] md:w-[600px] md:h-[300px]"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="w-full h-full bg-gradient-to-t from-[#f4b400] to-[#ff6d00] rounded-t-full drop-shadow-xl" />
+          </motion.div>
+
+
+          <motion.div
+            style={{ x: birdX }}
+            animate={{ y: [0, -15, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+            className="absolute top-10 left-[15%] md:left-[25%] z-20 w-20 md:w-32"
           >
-            Documentation
-          </a>
+            <img src="/assets/bird.svg" alt="Yellow Bird" className="w-full h-auto object-contain" />
+          </motion.div>
+
+          <motion.div
+            style={{ y: backCloudsY }}
+            className="absolute -bottom-10 w-[120%] z-20 flex justify-center drop-shadow-xl"
+          >
+            <img src="/assets/clouds-blue.svg" alt="Blue Clouds" className="w-full h-auto object-cover md:object-contain min-w-[1000px]" />
+          </motion.div>
+
+
+          <div className="absolute -bottom-5 w-[110%] z-30 flex justify-center drop-shadow-2xl">
+            <img src="/assets/clouds-white.svg" alt="White Clouds" className="w-full h-auto object-cover md:object-contain min-w-[1000px]" />
+          </div>
+
         </div>
-      </main>
-    </div>
+      </section>
+
+
+      <AboutSection />
+
+    </main>
   );
 }
