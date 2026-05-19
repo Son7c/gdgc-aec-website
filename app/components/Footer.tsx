@@ -52,11 +52,6 @@ export default function Footer() {
         <p>© {new Date().getFullYear()} Google Developer Groups OnCampus AEC. All rights reserved.</p>
         <p className="mt-1">Designed & Built with ❤️ by the GDGC AEC Core Team.</p>
       </div>
-
-export default function Footer() {
-  return (
-    <footer className="p-6 text-center text-gray-400 border-t">
-      © GDGC PRC
     </footer>
   );
 }
