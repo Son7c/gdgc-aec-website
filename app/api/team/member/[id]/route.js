@@ -24,9 +24,14 @@ export async function PATCH(req, { params }) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
 
+    const updateData = { ...body };
+    if (updateData.year !== undefined && updateData.year !== null) {
+      updateData.year = parseInt(updateData.year);
+    }
+
     await docRef.update({
-      ...body,
-      createdAt: new Date().toISOString(),
+      ...updateData,
+      updatedAt: new Date().toISOString(),
     })
 
     const updatedDoc=await docRef.get();

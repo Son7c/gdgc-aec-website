@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Plus, LogOut, LayoutDashboard, Users, CalendarDays, Server, CheckCircle2, Loader2 } from "lucide-react";
+import { Trash2, Plus, LogOut, LayoutDashboard, Users, CalendarDays, Server, CheckCircle2, Loader2, Pencil } from "lucide-react";
 import { robustParseDate } from "@/lib/dateUtils";
 
 export default function AdminPage() {
@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
 
   useEffect(() => {
     async function verifySession() {
@@ -243,30 +244,66 @@ export default function AdminPage() {
     } catch (err: any) { setError(err.message); }
   };
 
-  const addMember = async (e: React.FormEvent) => {
+  const handleSubmitMember = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch("/api/team", {
-        method: "POST",
+      const url = editingMemberId ? `/api/team/member/${editingMemberId}` : "/api/team";
+      const method = editingMemberId ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method: method,
         headers: { "Content-Type": "application/json", "x-admin-secret": secret },
         body: JSON.stringify({ ...newMember, year: parseInt(newMember.year) }),
       });
-      if (!res.ok) throw new Error("Failed to add member");
+      if (!res.ok) throw new Error(`Failed to ${editingMemberId ? 'update' : 'add'} member`);
       const savedMember = await res.json();
-      setTeam([savedMember, ...team]);
-      setNewMember({
-        name: "",
-        role: "",
-        year: "2026",
-        img: "/assets/team-1.jpg",
-        github: "",
-        linkedin: "",
-        globe: ""
-      });
-      showSuccess("Team member boarded.");
+
+      if (editingMemberId) {
+        setTeam(team.map((m) => ((m._id || m.id) === editingMemberId ? savedMember : m)));
+        showSuccess("Member profile updated.");
+      } else {
+        setTeam([savedMember, ...team]);
+        showSuccess("Team member boarded.");
+      }
+
+      cancelEditMember();
     } catch (err: any) { setError(err.message); }
   };
+
+  const startEditMember = (member: any) => {
+    setNewMember({
+      name: member.name || "",
+      role: member.role || "",
+      year: member.year ? String(member.year) : "2026",
+      img: member.img || "/assets/team-1.jpg",
+      github: member.github || "",
+      linkedin: member.linkedin || "",
+      globe: member.globe || ""
+    });
+    setIsEditing(true);
+    setEditingMemberId(member._id || member.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEditMember = () => {
+    setNewMember({
+      name: "",
+      role: "",
+      year: "2026",
+      img: "/assets/team-1.jpg",
+      github: "",
+      linkedin: "",
+      globe: ""
+    });
+    setIsEditing(false);
+    setEditingMemberId(null);
+  };
+
+  useEffect(() => {
+    cancelEdit();
+    cancelEditMember();
+  }, [activeTab]);
 
   const deleteMember = async (id: string) => {
     try {
@@ -440,9 +477,14 @@ export default function AdminPage() {
                           </div>
                         </div>
                       </div>
-                      <button onClick={() => deleteMember(member._id || member.id)} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-[#db4437] hover:bg-[#fce8e6] transition-colors">
-                        <Trash2 size={18} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => startEditMember(member)} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-[#0f9d58] hover:bg-green-50 transition-colors" title="Edit Member">
+                          <Pencil size={18} />
+                        </button>
+                        <button onClick={() => deleteMember(member._id || member.id)} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-[#db4437] hover:bg-[#fce8e6] transition-colors" title="Delete Member">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -453,7 +495,7 @@ export default function AdminPage() {
           <div className="lg:col-span-5 xl:col-span-4 sticky top-28">
             <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8">
               <h2 className="text-xl font-normal text-gray-800 mb-6 flex items-center gap-2">
-                <LayoutDashboard size={20} className="text-[#f4b400]" /> {isEditing ? "Edit Event" : `Create ${activeTab === "events" ? "Event" : "Profile"}`}
+                <LayoutDashboard size={20} className="text-[#f4b400]" /> {isEditing ? (activeTab === "events" ? "Edit Event" : "Edit Profile") : `Create ${activeTab === "events" ? "Event" : "Profile"}`}
               </h2>
 
               <AnimatePresence mode="wait">
@@ -564,7 +606,7 @@ export default function AdminPage() {
                     </div>
                   </motion.form>
                 ) : (
-                  <motion.form key="team-form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={addMember} className="space-y-5">
+                  <motion.form key="team-form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleSubmitMember} className="space-y-5">
 
                     <div className="relative bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#0f9d58] transition-colors px-4 pt-6 pb-2">
                       <input type="text" required value={newMember.name} onChange={(e) => setNewMember({ ...newMember, name: e.target.value })} className="w-full bg-transparent outline-none peer text-gray-900" />
@@ -602,9 +644,16 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <button type="submit" className="w-full bg-[#0f9d58] text-white py-3.5 rounded-full font-medium hover:bg-[#0b703e] hover:shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 mt-4">
-                      <Plus size={18} /> Register Member
-                    </button>
+                    <div className="flex gap-3 mt-4">
+                      {editingMemberId && (
+                        <button type="button" onClick={cancelEditMember} className="flex-grow bg-gray-100 text-gray-600 py-3.5 rounded-full font-medium hover:bg-gray-200 transition-all">
+                          Cancel
+                        </button>
+                      )}
+                      <button type="submit" className={`${editingMemberId ? 'flex-[2]' : 'w-full'} bg-[#0f9d58] text-white py-3.5 rounded-full font-medium hover:bg-[#0b703e] hover:shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2`}>
+                        {editingMemberId ? <CheckCircle2 size={18} /> : <Plus size={18} />} {editingMemberId ? "Update Member" : "Register Member"}
+                      </button>
+                    </div>
                   </motion.form>
                 )}
               </AnimatePresence>
