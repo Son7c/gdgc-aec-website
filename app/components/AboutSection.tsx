@@ -6,10 +6,10 @@ import { GraduationCap, Users, Code, Star } from "lucide-react";
 export default function AboutSection() {
 
   const tags = [
-    { text: "GDG AEC", color: "bg-[#0f9d58]", x: "-170%", y: "-500%", rotate: 5, delay: 0 },
-    { text: "GDG AEC", color: "bg-[#db4437]", x: "60%", y: "-500%", rotate: -5, delay: 0.2 },
-    { text: "GDG AEC", color: "bg-[#f4b400]", x: "-170%", y: "-100%", rotate: -10, delay: 0.4 },
-    { text: "GDG AEC", color: "bg-[#4285f4]", x: "50%", y: "-100%", rotate: 10, delay: 0.6 },
+    { text: "App Dev", color: "bg-[#0f9d58]", x: "-185%", y: "-500%", rotate: 5, delay: 0.2 },
+    { text: "web Dev", color: "bg-[#db4437]", x: "60%", y: "-500%", rotate: -5, delay: 0.2 },
+    { text: "AI-ML", color: "bg-[#f4b400]", x: "-199%", y: "-100%", rotate: -10, delay: 0.4 },
+    { text: "WEB3", color: "bg-[#4285f4]", x: "70%", y: "-100%", rotate: 10, delay: 0.6 },
   ];
 
 
@@ -21,7 +21,9 @@ export default function AboutSection() {
   ];
 
   return (
-    <section id="about" className="relative w-full max-w-7xl mx-auto px-4 py-24 z-30 bg-[#FDFBF7]">
+    <section id="about" className="relative w-full max-w-7xl mx-auto mt-20 px-4 py-24 z-30 bg-[#FDFBF7]">
+    {/* // <section id="about"className="relative w-full max-w-7xl mx-auto px-6 md:px-10 py-24 z-30 bg-[#fcf9f2] rounded-[3rem] shadow-[0_20px_80px_rgba(0,0,0,0.08)] border border-orange-100/40 overflow-hidden"> */}
+      {/* <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none" /> */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
 
