@@ -43,7 +43,7 @@ export default function HomeHero() {
               </Link>
 
               <Link
-                href="#events"
+                href="/events"
                 className="bg-transparent border-2 border-gray-900 text-gray-900 px-6 py-3 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors"
               >
                 Upcoming Event

@@ -10,7 +10,6 @@ const footerLinks = [
   { name: "About", path: "/#about" },
   { name: "Events", path: "/events" },
   { name: "Teams", path: "/teams" },
-  { name: "Contact", path: "/#contact" },
 ];
 
 // Symmetrical arc spreading outwards to the right side, perfectly mirroring the Hero section
@@ -99,7 +98,6 @@ export default function Footer() {
   return (
     <footer id="contact" className="relative bg-[#0b1329] text-white pt-20 pb-8 overflow-hidden border-t border-gray-800">
       {/* Subtle Background Radial Glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6">
@@ -148,94 +146,82 @@ export default function Footer() {
               </div>
             </div>
           </div>
+          {/* Membership Section */}
+<div className="flex flex-col items-center md:items-end text-center md:text-right">
 
-          {/* Column 3: Chapter Context Info */}
-          <div className="flex flex-col items-center md:items-end text-center md:text-right">
-            <h3 className="font-bold text-base uppercase tracking-wider text-gray-300 mb-4">
-              Our Base
-            </h3>
-            <p className="text-sm text-gray-400 max-w-xs leading-relaxed font-medium">
-              Asansol Engineering College <br />
-              Vivekananda Sarani, Kanyapur <br />
-              Asansol, West Bengal 713305
-            </p>
-          </div>
-        </div>
+  <h3 className="font-bold text-base uppercase tracking-wider text-gray-300 mb-4">
+    Join Community
+  </h3>
+
+  <div className="relative inline-flex items-center justify-center z-[90] pointer-events-auto">
+
+    <motion.button
+      type="button"
+      onClick={() => setShowSocials(!showSocials)}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.98 }}
+      className="bg-white text-gray-900 px-7 py-3 rounded-full text-sm font-bold hover:bg-gray-100 transition-all duration-300 flex items-center gap-3 cursor-pointer shadow-md hover:shadow-xl relative z-20"
+    >
+      Become a Member
+
+      <span className="bg-gray-900 text-white rounded-full p-0.5 transition-transform duration-300">
+        <ArrowRight
+          className={`w-3.5 h-3.5 transition-transform duration-300 ${
+            showSocials ? "rotate-180" : "rotate-0"
+          }`}
+        />
+      </span>
+    </motion.button>
+
+    <AnimatePresence>
+      {showSocials && (
+        <motion.div
+          key="footer-social-menu"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center overflow-visible"        >
+          <GoogleConfetti />
+
+          {socialLinks.map((link, idx) => (
+            <motion.a
+              key={link.id}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, x: 0, y: 0, scale: 0.5 }}
+              animate={{
+                opacity: 1,
+                x: link.x,
+                y: link.y,
+                scale: 1,
+              }}
+              exit={{
+                opacity: 0,
+                x: 0,
+                y: 0,
+                scale: 0.5,
+              }}
+              transition={{
+                duration: 0.35,
+                ease: [0.22, 1, 0.36, 1],
+                delay: idx * 0.04,
+              }}
+              className={`absolute -ml-5 -mt-5 flex items-center justify-center w-10 h-10 rounded-full shadow-lg hover:scale-110 transition-transform pointer-events-auto ${link.bg} ${link.text}`}
+            >
+              {link.icon}
+            </motion.a>
+          ))}
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+  </div>
+</div>        </div>
+        
 
         {/* Enhanced Call-to-Action Membership Banner Row */}
-        <div className="border-t border-gray-800/80 pt-10 pb-4 flex flex-col lg:flex-row items-center justify-between gap-8 bg-gray-900/40 rounded-2xl p-6 md:p-10 border border-gray-800/40 backdrop-blur-sm">
-          <div className="text-center lg:text-left max-w-xl">
-            <h3 className="font-extrabold text-xl md:text-2xl text-white mb-2 tracking-tight">
-              Ready to accelerate your developer journey?
-            </h3>
-            <p className="text-sm text-gray-400 font-medium">
-              Join the official network to keep tab of local hackathons, hands-on cloud labs, and professional tech sessions.
-            </p>
-          </div>
-
-          {/* Interactive Trigger Button Assembly */}
-          <div className="relative inline-flex items-center justify-center z-[90] pointer-events-auto lg:mr-32">
-            <motion.button
-              type="button"
-              onClick={() => setShowSocials(!showSocials)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="bg-white text-gray-900 px-7 py-3 rounded-full text-sm font-bold hover:bg-gray-100 transition-all duration-300 flex items-center gap-3 cursor-pointer shadow-md hover:shadow-xl relative z-20"
-            >
-              Become a Member
-              <span className="bg-gray-900 text-white rounded-full p-0.5 transition-transform duration-300">
-                <ArrowRight
-                  className={`w-3.5 h-3.5 transition-transform duration-300 ${showSocials ? "rotate-180" : "rotate-0"
-                    }`}
-                />
-              </span>
-            </motion.button>
-
-            <AnimatePresence>
-              {showSocials && (
-                <motion.div
-                  key="footer-social-menu"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
-                >
-                  <GoogleConfetti />
-
-                  {socialLinks.map((link, idx) => (
-                    <motion.a
-                      key={link.id}
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      initial={{ opacity: 0, x: 0, y: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, x: link.x, y: link.y, scale: 1 }}
-                      exit={{ opacity: 0, x: 0, y: 0, scale: 0.5 }}
-                      transition={{
-                        duration: 0.35,
-                        ease: [0.22, 1, 0.36, 1],
-                        delay: idx * 0.04,
-                      }}
-                      className={`absolute -ml-5 -mt-5 flex items-center justify-center w-10 h-10 rounded-full shadow-lg hover:scale-110 transition-transform pointer-events-auto ${link.bg} ${link.text}`}
-                      title={
-                        link.id === "x"
-                          ? "Follow on X"
-                          : link.id === "linkedin"
-                            ? "Connect on LinkedIn"
-                            : link.id === "community"
-                              ? "View Community Hub"
-                              : "Join Discord"
-                      }
-                    >
-                      {link.icon}
-                    </motion.a>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
+        {/* Membership Button Section */}
         {/* Legal Copyright Line */}
         <div className="border-t border-gray-800/60 mt-12 pt-8 text-center text-xs text-gray-500 font-medium tracking-wide">
           <p>© {new Date().getFullYear()} Google Developer Groups OnCampus AEC. All rights reserved.</p>

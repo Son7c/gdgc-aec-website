@@ -95,6 +95,17 @@ export default function GallerySection() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
+  useEffect(() => {
+    if (selected) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [selected]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

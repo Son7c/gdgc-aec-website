@@ -3,6 +3,7 @@
 import HeroSection from "@/app/components/HeroSection";
 import AboutSection from "@/app/components/AboutSection";
 import TeamTrainSection from "@/app/components/TeamTrainSection";
+import GallerySection from "@/app/components/GallerySection";
 
 export default function Home() {
   return (
@@ -17,6 +18,10 @@ export default function Home() {
         className="relative z-[80] bg-white"
       >
         <AboutSection />
+      </section>
+
+      <section id="gallery" className="relative">
+        <GallerySection />
       </section>
 
       <section id="teams">
