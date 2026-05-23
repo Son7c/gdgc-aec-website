@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Plus, LogOut, LayoutDashboard, Users, CalendarDays, Server, CheckCircle2, Loader2, Pencil, Camera } from "lucide-react";
+import { Trash2, Plus, LogOut, LayoutDashboard, Users, CalendarDays, Server, CheckCircle2, Loader2, Pencil, Camera, Upload } from "lucide-react";
 import { robustParseDate } from "@/lib/dateUtils";
 
 export default function AdminPage() {
@@ -30,7 +30,7 @@ export default function AdminPage() {
     name: "",
     role: "",
     year: "2026",
-    img: "/assets/team-1.jpg",
+    img: "/assets/default-avatar.svg",
     github: "",
     linkedin: "",
     globe: ""
@@ -131,6 +131,44 @@ export default function AdminPage() {
     setIsAuthenticated(false);
     setSecret("");
     localStorage.removeItem("gdgc_admin_secret");
+  };
+
+  // ImageKit Client-side Upload Handler targeting explicit nested folders
+  const uploadToImageKit = async (file: File): Promise<string> => {
+    const authRes = await fetch("/api/imagekit-auth");
+    if (!authRes.ok) throw new Error("Failed to secure ImageKit upload parameters.");
+    const authData = await authRes.json();
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", file.name);
+    formData.append("publicKey", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "");
+    formData.append("signature", authData.signature);
+    formData.append("expire", authData.expire);
+    formData.append("token", authData.token);
+    formData.append("useUniqueFileName", "true");
+    
+    // Explicitly targeting the gdgc-aec folder structures you created
+    const destinationFolder = activeTab === "events" 
+      ? "gdgc-aec/events" 
+      : activeTab === "team" 
+      ? "gdgc-aec/team" 
+      : "gdgc-aec/gallery";
+      
+    formData.append("folder", destinationFolder);
+
+    const uploadRes = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!uploadRes.ok) {
+      const errData = await uploadRes.json();
+      throw new Error(errData.message || "Failed to push object into ImageKit storage vault.");
+    }
+
+    const result = await uploadRes.json();
+    return result.url;
   };
 
   const handleDateChange = (dateVal: string) => {
@@ -304,7 +342,7 @@ export default function AdminPage() {
       name: "",
       role: "",
       year: "2026",
-      img: "/assets/team-1.jpg",
+      img: "/assets/default-avatar.svg",
       github: "",
       linkedin: "",
       globe: ""
@@ -541,7 +579,7 @@ export default function AdminPage() {
                   {activeTab === "team" && team.map((member, index) => (
                     <motion.div key={member._id || member.id || index} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ delay: index * 0.05 }} className="group bg-white p-4 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
                       <div className="flex items-center gap-4">
-                        <img src={member.img} alt={member.name} className="w-14 h-14 rounded-full object-cover border border-gray-100" />
+                        <img src={member.img && member.img.trim() !== "" && !member.img.startsWith("/assets/team-") ? member.img : "/assets/default-avatar.svg"} alt={member.name} className="w-14 h-14 rounded-full object-cover border border-gray-100" />
                         <div>
                           <h3 className="text-base font-medium text-gray-900">{member.name}</h3>
                           <p className="text-sm text-[#0f9d58] font-medium mb-1.5">{member.role} <span className="text-gray-400 ml-2">Class of {member.year}</span></p>
@@ -573,7 +611,16 @@ export default function AdminPage() {
                           <div>
                             <h3 className="text-base font-medium text-gray-900">{item.title}</h3>
                             <p className="text-xs text-[#0f9d58] font-semibold uppercase tracking-wider mb-1">
-                              Size: <span className="text-gray-500 font-medium normal-case">{item.size === "col-span-1" ? "Standard (1x1)" : item.size === "md:col-span-2" ? "Wide (2x1)" : "Large Feature (2x2)"}</span>
+                              Size: <span className="text-gray-500 font-medium normal-case">
+                                {item.size === "col-span-1" ? "Standard (1x1)" :
+                                 item.size === "md:col-span-2" ? "Wide (2x1)" :
+                                 item.size === "md:col-span-2 md:row-span-2" ? "Large Feature (2x2)" :
+                                 item.size === "col-span-1 md:row-span-2" ? "Tall (1x2)" :
+                                 item.size === "md:col-span-3" ? "Landscape Medium (3x1)" :
+                                 item.size === "md:col-span-3 md:row-span-2" ? "Landscape 16:9 (3x2)" :
+                                 item.size === "md:col-span-4" ? "Panoramic Wide (4x1)" :
+                                 item.size === "md:col-span-4 md:row-span-2" ? "Panoramic Feature (4x2)" : "Custom Size"}
+                              </span>
                             </p>
                             <p className="text-xs text-gray-500 font-medium">
                               Linked Event: {linkedEvent ? (
@@ -651,13 +698,35 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className="relative bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#4285f4] transition-colors px-4 pt-6 pb-2">
-                      <input type="text" value={newEvent.image} onChange={(e) => setNewEvent({ ...newEvent, image: e.target.value })} className="w-full bg-transparent outline-none peer text-gray-900" />
-                      <label className={`absolute left-4 transition-all duration-200 pointer-events-none text-gray-500 font-medium ${newEvent.image ? 'text-xs top-2 text-[#4285f4]' : 'text-sm top-4 peer-focus:text-xs peer-focus:top-2 peer-focus:text-[#4285f4]'}`}>Hero Image URL</label>
+                    {/* Integrated ImageKit File Picker for Hero Image */}
+                    <div className="bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#4285f4] px-4 py-3 flex flex-col justify-center">
+                      <span className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1"><Upload size={12}/> Hero Image File</span>
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        disabled={loading}
+                        onChange={async (e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            try {
+                              setLoading(true);
+                              setError(null);
+                              const url = await uploadToImageKit(e.target.files[0]);
+                              setNewEvent({ ...newEvent, image: url });
+                              showSuccess("Hero banner pushed to imagekit repository.");
+                            } catch (err: any) {
+                              setError(err.message);
+                            } finally {
+                              setLoading(false);
+                            }
+                          }
+                        }} 
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50 cursor-pointer" 
+                      />
+                      {newEvent.image && <p className="text-[10px] text-green-600 font-medium mt-1 truncate">CDN URL: {newEvent.image}</p>}
                     </div>
 
                     <div className="space-y-3">
-                      <label className="text-xs text-gray-500 font-bold uppercase tracking-widest px-1">Gallery Images</label>
+                      <label className="text-xs text-gray-500 font-bold uppercase tracking-widest px-1">Gallery Images (Optional URL fallbacks)</label>
                       {newEvent.gallery.map((url, index) => (
                         <div key={index} className="relative bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#4285f4] transition-colors px-4 pt-6 pb-2 flex gap-2">
                           <input
@@ -708,7 +777,7 @@ export default function AdminPage() {
                           Cancel
                         </button>
                       )}
-                      <button type="submit" className={`${isEditing ? 'flex-[2]' : 'w-full'} bg-[#4285f4] text-white py-3.5 rounded-full font-medium hover:bg-[#3367d6] hover:shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2`}>
+                      <button type="submit" disabled={loading} className={`${isEditing ? 'flex-[2]' : 'w-full'} bg-[#4285f4] text-white py-3.5 rounded-full font-medium hover:bg-[#3367d6] hover:shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 disabled:opacity-50`}>
                         {isEditing ? <CheckCircle2 size={18} /> : <Plus size={18} />} {isEditing ? "Update Event" : "Publish Event"}
                       </button>
                     </div>
@@ -731,9 +800,31 @@ export default function AdminPage() {
                         <input type="number" required value={newMember.year} onChange={(e) => setNewMember({ ...newMember, year: e.target.value })} className="w-full bg-transparent outline-none peer text-gray-900" />
                         <label className={`absolute left-4 transition-all duration-200 pointer-events-none text-gray-500 font-medium ${newMember.year ? 'text-xs top-2 text-[#0f9d58]' : 'text-sm top-4 peer-focus:text-xs peer-focus:top-2 peer-focus:text-[#0f9d58]'}`}>Class Year</label>
                       </div>
-                      <div className="relative bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#0f9d58] transition-colors px-4 pt-6 pb-2">
-                        <input type="text" required value={newMember.img} onChange={(e) => setNewMember({ ...newMember, img: e.target.value })} className="w-full bg-transparent outline-none peer text-gray-900" />
-                        <label className={`absolute left-4 transition-all duration-200 pointer-events-none text-gray-500 font-medium ${newMember.img ? 'text-xs top-2 text-[#0f9d58]' : 'text-sm top-4 peer-focus:text-xs peer-focus:top-2 peer-focus:text-[#0f9d58]'}`}>Avatar Path</label>
+                      
+                      {/* Integrated ImageKit File Picker for Team Avatars */}
+                      <div className="bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#0f9d58] px-4 py-2 flex flex-col justify-center">
+                        <span className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1"><Upload size={12}/> Avatar Upload</span>
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          disabled={loading}
+                          onChange={async (e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              try {
+                                setLoading(true);
+                                setError(null);
+                                const url = await uploadToImageKit(e.target.files[0]);
+                                setNewMember({ ...newMember, img: url });
+                                showSuccess("Member avatar hosted successfully.");
+                              } catch (err: any) {
+                                setError(err.message);
+                              } finally {
+                                setLoading(false);
+                              }
+                            }
+                          }}
+                          className="w-full text-xs text-gray-500 file:mr-2 file:py-0.5 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 disabled:opacity-50 cursor-pointer" 
+                        />
                       </div>
                     </div>
 
@@ -758,7 +849,7 @@ export default function AdminPage() {
                           Cancel
                         </button>
                       )}
-                      <button type="submit" className={`${editingMemberId ? 'flex-[2]' : 'w-full'} bg-[#0f9d58] text-white py-3.5 rounded-full font-medium hover:bg-[#0b703e] hover:shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2`}>
+                      <button type="submit" disabled={loading} className={`${editingMemberId ? 'flex-[2]' : 'w-full'} bg-[#0f9d58] text-white py-3.5 rounded-full font-medium hover:bg-[#0b703e] hover:shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 disabled:opacity-50`}>
                         {editingMemberId ? <CheckCircle2 size={18} /> : <Plus size={18} />} {editingMemberId ? "Update Member" : "Register Member"}
                       </button>
                     </div>
@@ -770,9 +861,31 @@ export default function AdminPage() {
                       <label className={`absolute left-4 transition-all duration-200 pointer-events-none text-gray-500 font-medium ${newGalleryItem.title ? 'text-xs top-2 text-[#0f9d58]' : 'text-sm top-4 peer-focus:text-xs peer-focus:top-2 peer-focus:text-[#0f9d58]'}`}>Photo Title</label>
                     </div>
 
-                    <div className="relative bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#0f9d58] transition-colors px-4 pt-6 pb-2">
-                      <input type="text" required value={newGalleryItem.src} onChange={(e) => setNewGalleryItem({ ...newGalleryItem, src: e.target.value })} className="w-full bg-transparent outline-none peer text-gray-900" />
-                      <label className={`absolute left-4 transition-all duration-200 pointer-events-none text-gray-500 font-medium ${newGalleryItem.src ? 'text-xs top-2 text-[#0f9d58]' : 'text-sm top-4 peer-focus:text-xs peer-focus:top-2 peer-focus:text-[#0f9d58]'}`}>Image URL</label>
+                    {/* Integrated ImageKit File Picker for Media Library/Gallery */}
+                    <div className="bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#0f9d58] px-4 py-3 flex flex-col justify-center">
+                      <span className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1"><Upload size={12}/> Select Vault Image</span>
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        disabled={loading}
+                        onChange={async (e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            try {
+                              setLoading(true);
+                              setError(null);
+                              const url = await uploadToImageKit(e.target.files[0]);
+                              setNewGalleryItem({ ...newGalleryItem, src: url });
+                              showSuccess("Image locked into cloud media library.");
+                            } catch (err: any) {
+                              setError(err.message);
+                            } finally {
+                              setLoading(false);
+                            }
+                          }
+                        }} 
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 disabled:opacity-50 cursor-pointer"
+                      />
+                      {newGalleryItem.src && <p className="text-[10px] text-green-600 font-medium mt-1 truncate">CDN URL: {newGalleryItem.src}</p>}
                     </div>
 
                     <div className="bg-gray-50 rounded-t-xl border-b-2 border-gray-300 focus-within:border-[#0f9d58] px-4 py-2 flex flex-col justify-end">
@@ -791,6 +904,11 @@ export default function AdminPage() {
                         <option value="col-span-1">Standard (1x1)</option>
                         <option value="md:col-span-2">Wide (2x1)</option>
                         <option value="md:col-span-2 md:row-span-2">Large Feature (2x2)</option>
+                        <option value="col-span-1 md:row-span-2">Tall (1x2)</option>
+                        <option value="md:col-span-3">Landscape Medium (3x1)</option>
+                        <option value="md:col-span-3 md:row-span-2">Landscape 16:9 (3x2)</option>
+                        <option value="md:col-span-4">Panoramic Wide (4x1)</option>
+                        <option value="md:col-span-4 md:row-span-2">Panoramic Feature (4x2)</option>
                       </select>
                     </div>
 
@@ -800,7 +918,7 @@ export default function AdminPage() {
                           Cancel
                         </button>
                       )}
-                      <button type="submit" className={`${editingGalleryId ? 'flex-[2]' : 'w-full'} bg-[#0f9d58] text-white py-3.5 rounded-full font-medium hover:bg-[#0b703e] hover:shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2`}>
+                      <button type="submit" disabled={loading} className={`${editingGalleryId ? 'flex-[2]' : 'w-full'} bg-[#0f9d58] text-white py-3.5 rounded-full font-medium hover:bg-[#0b703e] hover:shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 disabled:opacity-50`}>
                         {editingGalleryId ? <CheckCircle2 size={18} /> : <Plus size={18} />} {editingGalleryId ? "Update Photo" : "Upload Photo"}
                       </button>
                     </div>

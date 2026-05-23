@@ -105,7 +105,7 @@ export default function TeamTrainSection() {
         const res = await fetch("/api/team");
         if (!res.ok) throw new Error("Failed to fetch team data");
         const members = await res.json();
-        
+
         if (members && members.length > 0) {
           const grouped = members.reduce((acc: any, member: any) => {
             const yearStr = `Class of ${member.year}`;
@@ -130,7 +130,7 @@ export default function TeamTrainSection() {
               color: colors[idx % colors.length],
               members: grouped[yearStr],
             }));
-            
+
           setTeamYears(formattedYears);
         }
       } catch (error) {
@@ -140,16 +140,16 @@ export default function TeamTrainSection() {
     fetchTeam();
   }, []);
 
-  const { scrollYProgress } = useScroll({ 
+  const { scrollYProgress } = useScroll({
     target: targetRef,
     offset: ["start start", "end end"]
   });
 
-  const maxShift = trainWidth > 0 && windowWidth > 0 
+  const maxShift = trainWidth > 0 && windowWidth > 0
     ? Math.min(0, -(trainWidth - windowWidth + 100))
     : -(teamYears.length * 60 * 16); // fallback
   const startX = windowWidth > 0 ? windowWidth * 0.1 : 100;
-  
+
   const distance = Math.abs(maxShift - startX);
 
   const trainX = useTransform(scrollYProgress, [0, 1], [startX, maxShift]);
@@ -162,9 +162,9 @@ export default function TeamTrainSection() {
   const mountainsX = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
 
   return (
-    <section 
-      ref={targetRef} 
-      className="relative bg-[#FDFBF7]" 
+    <section
+      ref={targetRef}
+      className="relative bg-[#FDFBF7]"
       style={{ height: trainWidth > 0 ? `calc(${distance}px + 100vh)` : `${teamYears.length * 100}vh` }}
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-end pb-10 md:pb-24">
@@ -290,7 +290,7 @@ export default function TeamTrainSection() {
 
                           <div className="w-full aspect-[3/4] flip-container mb-4 transition-all duration-500 group-hover:-translate-y-2 z-10">
                             <div className="flip-card">
-                              
+
                               <div className="flip-front w-full h-full p-2 bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.15)] overflow-hidden">
                                 <img src={member.img} alt={member.name} className="w-full h-full object-cover rounded-xl" />
                                 <div className="absolute top-0 left-[-150%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[30deg] transition-all duration-700 group-hover:left-[150%] pointer-events-none" />
@@ -305,7 +305,7 @@ export default function TeamTrainSection() {
                                   <p className="text-xs font-semibold mt-0.5 truncate max-w-[130px]">{member.name.split(" ")[0]}</p>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <a 
+                                  <a
                                     href={member.github || `https://github.com/search?q=${encodeURIComponent(member.name)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -315,7 +315,7 @@ export default function TeamTrainSection() {
                                   >
                                     <GithubIcon className="w-4 h-4" />
                                   </a>
-                                  <a 
+                                  <a
                                     href={member.linkedin || `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(member.name)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -325,7 +325,7 @@ export default function TeamTrainSection() {
                                   >
                                     <LinkedinIcon className="w-4 h-4" />
                                   </a>
-                                  <a 
+                                  <a
                                     href={member.instagram || member.twitter || member.globe || `https://instagram.com`}
                                     target="_blank"
                                     rel="noopener noreferrer"
