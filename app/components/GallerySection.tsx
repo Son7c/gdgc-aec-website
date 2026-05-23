@@ -146,7 +146,7 @@ export default function GallerySection() {
           <div className="w-12 h-12 border-4 border-black/10 border-t-[#0f9d58] rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-[800px] perspective-[1000px]">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:min-h-[800px] perspective-[1000px]">
           {photos.map((photo, index) => {
             const linkedEvent = events.find(e => e.slug === photo.eventSlug);
             return (
