@@ -6,14 +6,21 @@ import { toPng } from "html-to-image";
 // Curated list of Legendary, Mythical, and highly cool/popular Pokémon
 const LEGENDARY_POKEMON = [
   // Generation 1
-  { id: 150, name: "mewtwo", type: "legendary" },
-  { id: 151, name: "mew", type: "mythical" },
+  { id: 3, name: "venusaur", type: "cool" },
   { id: 6, name: "charizard", type: "cool" },
+  { id: 9, name: "blastoise", type: "cool" },
+  { id: 25, name: "pikachu", type: "cool" },
+  { id: 65, name: "alakazam", type: "cool" },
   { id: 94, name: "gengar", type: "cool" },
+  { id: 130, name: "gyarados", type: "cool" },
+  { id: 131, name: "lapras", type: "cool" },
+  { id: 143, name: "snorlax", type: "cool" },
   { id: 144, name: "articuno", type: "legendary" },
   { id: 145, name: "zapdos", type: "legendary" },
   { id: 146, name: "moltres", type: "legendary" },
   { id: 149, name: "dragonite", type: "cool" },
+  { id: 150, name: "mewtwo", type: "legendary" },
+  { id: 151, name: "mew", type: "mythical" },
 
   // Generation 2
   { id: 243, name: "raikou", type: "legendary" },
@@ -60,8 +67,15 @@ const LEGENDARY_POKEMON = [
   { id: 647, name: "keldeo", type: "mythical" },
   { id: 649, name: "genesect", type: "mythical" },
 
-  // Generation 6
+  // Generation 6 (Pokemon X & Y)
+  { id: 652, name: "chesnaught", type: "cool" },
+  { id: 655, name: "delphox", type: "cool" },
   { id: 658, name: "greninja", type: "cool" },
+  { id: 663, name: "talonflame", type: "cool" },
+  { id: 681, name: "aegislash", type: "cool" },
+  { id: 700, name: "sylveon", type: "cool" },
+  { id: 706, name: "goodra", type: "cool" },
+  { id: 715, name: "noivern", type: "cool" },
   { id: 716, name: "xerneas", type: "legendary" },
   { id: 717, name: "yveltal", type: "legendary" },
   { id: 718, name: "zygarde", type: "legendary" },
@@ -225,8 +239,8 @@ export default function RevealCard() {
       const link = document.createElement("a");
 
       link.download = `GDGC-AEC-Pass-${name
-          .replace(/\s+/g, "-")
-          .toLowerCase()}.png`;
+        .replace(/\s+/g, "-")
+        .toLowerCase()}.png`;
 
       link.href = dataUrl;
 
@@ -311,7 +325,7 @@ export default function RevealCard() {
           </div>
 
           <div className="w-full h-full grid grid-cols-1 md:grid-cols-5 relative z-10">
-             {/* LEFT SECTION (Premium Companion Display) */}
+            {/* LEFT SECTION (Premium Companion Display) */}
             <div className={`col-span-1 md:col-span-2 relative min-h-[220px] md:h-full bg-gradient-to-b ${theme.bgGradient} md:border-r border-b md:border-b-0 border-slate-100/10 flex flex-col items-center justify-center p-4 overflow-hidden`}>
 
               {/* Dynamic ambient color overlay */}
